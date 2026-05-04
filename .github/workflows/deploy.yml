@@ -19,12 +19,16 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
-         script: |
-        docker stop frontend-app || true
-        docker rm frontend-app || true
-        rm -rf ci-cd-project || true
-        git clone https://github.com/mbhavanasri03-png/ci-cd-project.git
-        cd ci-cd-project
-        docker build -t frontend-app .
-        docker run -d -p 80:80 --name frontend-app frontend-app
-           
+          script: |
+            # Stop and remove existing container if it exists
+            docker stop frontend-app || true
+            docker rm frontend-app || true
+            
+            # Remove old code and re-clone
+            rm -rf ci-cd-project || true
+            git clone https://github.com/mbhavanasri03-png/ci-cd-project.git
+            
+            # Navigate, build, and run
+            cd ci-cd-project
+            docker build -t frontend-app .
+            docker run -d -p 80:80 --name frontend-app frontend-app
