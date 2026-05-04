@@ -1,17 +1,33 @@
-- name: Deploy to EC2
+name: CI-CD Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            # Clean up old containers/folders
+            # Stop and remove existing container if it exists
             sudo docker stop frontend-app || true
             sudo docker rm frontend-app || true
-            sudo rm -rf ci-cd-project || true
             
-            # Clone and build
+            # Remove old code and re-clone
+            sudo rm -rf ci-cd-project || true
             git clone https://github.com/mbhavanasri03-png/ci-cd-project.git
+            
+            # Navigate, build, and run
             cd ci-cd-project
             sudo docker build -t frontend-app .
             sudo docker run -d -p 80:80 --name frontend-app frontend-app
